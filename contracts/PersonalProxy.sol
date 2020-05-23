@@ -8,6 +8,7 @@ contract PersonalProxy is Ownable {
     using SafeMath for uint;
     struct Call {
         address target;
+        uint256 value;
         bytes callData;
     }
 
@@ -19,12 +20,12 @@ contract PersonalProxy is Ownable {
 
     function() external payable {}
 
-    function execute(Call[] memory calls) public onlyOwner returns (bytes[] memory returnData) {
+    function execute(Call[] memory calls) public payable onlyOwner returns (bytes[] memory returnData) {
         uint256 gasProvided = gasleft();
 
         returnData = new bytes[](calls.length);
         for(uint256 i = 0; i < calls.length; i++) {
-            (bool success, bytes memory data) = calls[i].target.call(calls[i].callData);
+            (bool success, bytes memory data) = calls[i].target.call.value(calls[i].value)(calls[i].callData);
             require(success, string(data));
             returnData[i] = data;
         }
